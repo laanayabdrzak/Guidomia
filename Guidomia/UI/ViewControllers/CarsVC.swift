@@ -29,27 +29,17 @@ class CarsVC: UIViewController {
         }
     }
     
-    lazy var fetchedhResultController: NSFetchedResultsController<NSFetchRequestResult> = {
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: Car.self))
-        // TODO: If we wanna sort with rating
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "rating", ascending: true)]
-        let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DatabaseHelper.sharedInstance.persistentContainer.viewContext, sectionNameKeyPath: nil, cacheName: nil)
-        frc.delegate = self
-        return frc
-    }()
-    
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureView()
-        updateTableContent()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         /**
          By default, the first item should be expanded.
          */
-        if !isFiltering {
+        if let array = vm.carsItems, !array.isEmpty, !isFiltering {
             selectedCellIndexPath = IndexPath.init(row: 0, section: 0)
             tableView.selectRow(at: selectedCellIndexPath, animated: true, scrollPosition: .bottom)
         }
@@ -83,17 +73,6 @@ class CarsVC: UIViewController {
         refreshControl.addTarget(self, action: #selector(reloadData), for: .valueChanged)
         tableView.refreshControl = refreshControl
         
-    }
-    
-    private func updateTableContent() {
-        
-        do {
-            try self.fetchedhResultController.performFetch()
-            print("COUNT FETCHED FIRST: \(String(describing: self.fetchedhResultController.sections?[0].numberOfObjects))")
-        } catch let error  {
-            print("ERROR: \(error)")
-        }
-        vm.saveInCoreDataWith(array: vm.carsItems!)
     }
     
     @IBAction func reloadData() {
@@ -161,7 +140,7 @@ extension CarsVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         /**
-         hide the detailView when another cell is selected,
+         hide the `detailView` when another cell is selected,
          we can achieve that easily with
          */
         if let cell = self.tableView.cellForRow(at: indexPath) as? CarViewCell {
@@ -196,27 +175,5 @@ extension CarsVC: CarHeaderDelegate {
             isFiltering = false
             filteredCars = vm.carsItems!
         }
-    }
-}
-
-extension CarsVC: NSFetchedResultsControllerDelegate {
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        
-        switch type {
-        case .insert:
-            self.tableView.insertRows(at: [newIndexPath!], with: .automatic)
-        case .delete:
-            self.tableView.deleteRows(at: [indexPath!], with: .automatic)
-        default:
-            break
-        }
-    }
-    
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        self.tableView.endUpdates()
-    }
-    
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        self.tableView.beginUpdates()
     }
 }

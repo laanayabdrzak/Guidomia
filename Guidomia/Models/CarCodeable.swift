@@ -1,8 +1,8 @@
 import UIKit
 
 /****
-     Codable will allow you to covert from JSON to a Struct
-     with JSONDecoder().decode(_:from:).
+ Codable will allow you to covert from JSON to a Struct
+ with JSONDecoder().decode(_:from:).
  */
 struct CarCodeable: Codable {
     
@@ -35,6 +35,16 @@ struct CarCodeable: Codable {
         rating = try values.decode(Int.self, forKey: .rating)
     }
     
+    init(make: String, model: String, customerPrice: Double, marketPrice: Double,
+         rating: Int, consList: [String], prosList: [String]) {
+        self.make = make
+        self.model = model
+        self.customerPrice = customerPrice
+        self.marketPrice = marketPrice
+        self.rating = rating
+        self.consList = consList
+        self.prosList = prosList
+    }
 }
 
 extension CarCodeable {

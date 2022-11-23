@@ -19,7 +19,7 @@ extension NSAttributedString {
         return NSAttributedString(attributedString: attributedString)
     }
     
-    private func withOrangeBullet() -> NSAttributedString {
+    private func orangeBullet() -> NSAttributedString {
         var attributes = [NSAttributedString.Key: AnyObject]()
         attributes[.foregroundColor] = UIColor.orange
         attributes[.font] = UIFont.systemFont(ofSize: 24, weight: .heavy)
@@ -29,7 +29,7 @@ extension NSAttributedString {
     
     
     func displayBulletedText(for inputArray:[String]) -> NSAttributedString {
-        let bullet = withOrangeBullet()
+        let bullet = orangeBullet()
         
         let eas = NSMutableAttributedString()
         inputArray.forEach {

@@ -8,8 +8,9 @@
 import UIKit
 
 struct Constants {
+    
     static let appName: String = "Guidomia"
-    static let carList: String = "CarList"
+    static let carsJSonFile: String = "CarList"
     static let star: String = "★"
     static let space: String = " "
     static let bulletIcon: String = "•  "
@@ -21,6 +22,16 @@ struct Constants {
     static let unselectedCellHeight: CGFloat = 140.0
     static let selectedDetailCellHeight: CGFloat = 200.0
     static let unselectedDetailCellHeight: CGFloat = 0.0
+    
+    static let firstLaunchKey: String = "First Launch"
+    
+    static let makeAttKeyEntity: String = "make"
+    static let modelAttKeyEntity: String = "model"
+    static let customerPriceAttKeyEntity: String = "customerPrice"
+    static let marketPriceAttKeyEntity: String = "marketPrice"
+    static let ratingAttKeyEntity: String = "rating"
+    static let prosListAttKeyEntity: String = "prosList"
+    static let consListAttKeyEntity: String = "consList"
 
 }
 
