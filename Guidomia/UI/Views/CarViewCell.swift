@@ -20,6 +20,7 @@ class CarViewCell: UITableViewCell {
     @IBOutlet weak var prosDetails: UILabel!
     @IBOutlet weak var consDetails: UILabel!
     @IBOutlet private weak var heightDetailVConstraint: NSLayoutConstraint!
+    
     //MARK: - Props
     static let identifier = "CarViewCell"
     static let nibName = "CarViewCell"
@@ -28,6 +29,7 @@ class CarViewCell: UITableViewCell {
         didSet { self.fillData() }
     }
     
+    // MARK: Lifecycle
     override func awakeFromNib() {
         super.awakeFromNib()
     }
@@ -38,6 +40,7 @@ class CarViewCell: UITableViewCell {
         carImageView.image = nil
     }
     
+    // MARK: Core
     private func fillData() {
         fillThumb()
         fillCarName()
@@ -83,6 +86,7 @@ class CarViewCell: UITableViewCell {
     
 }
 
+// MARK: Helpers for Expand/Collapse stats
 extension CarViewCell {
     
     var isDetailViewHidden: Bool {

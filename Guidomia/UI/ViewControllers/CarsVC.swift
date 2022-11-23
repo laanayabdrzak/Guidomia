@@ -19,18 +19,29 @@ class CarsVC: UIViewController {
         return rc
     }()
     
-    
     private var selectedCellIndexPath: IndexPath?
-    
+    var isFiltering: Bool = false
+    var filteredCars = [Car]() {
+        didSet {
+            selectedCellIndexPath = nil
+            tableView.reloadData()
+        }
+    }
     
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupTableView()
+        configureView()
     }
     
     //MARK: - Setup UI
-    private func setupTableView() {
+    private func configureView() {
+        
+        // Navigation Bar
+        UIHelper().setCustomNavigationTitle(title: Constants.appName.uppercased(), navItem: navigationItem)
+        UIHelper().setNavigationBar(tintColor: .white, navController: navigationController, navItem: self.navigationItem)
+        
+        // TableView attributs
         tableView.separatorStyle = .none
         tableView.automaticallyAdjustsScrollIndicatorInsets = false
         tableView.backgroundColor = .clear
@@ -39,18 +50,23 @@ class CarsVC: UIViewController {
         tableView.estimatedRowHeight = Constants.selectedCellHeight
         tableView.rowHeight = UITableView.automaticDimension
         
+        // HeaderViewSection
         let nibHeader = UINib(nibName: CarHeaderView.nibName, bundle: nil)
-        let nibCell = UINib(nibName: CarViewCell.nibName, bundle: nil)
-        tableView.register(nibCell, forCellReuseIdentifier: CarViewCell.identifier)
         tableView.register(nibHeader, forHeaderFooterViewReuseIdentifier: CarHeaderView.headerID)
         
+        // TableViewCell
+        let nibCell = UINib(nibName: CarViewCell.nibName, bundle: nil)
+        tableView.register(nibCell, forCellReuseIdentifier: CarViewCell.identifier)
+        
+        // Refresh Control UI's
         refreshControl.addTarget(self, action: #selector(reloadData), for: .valueChanged)
         tableView.refreshControl = refreshControl
         
         // By default, the first item should be expanded.
-        selectedCellIndexPath = IndexPath.init(row: 0, section: 0)
-        tableView.selectRow(at: selectedCellIndexPath, animated: true, scrollPosition: .bottom)
-        
+        if !isFiltering {
+            selectedCellIndexPath = IndexPath.init(row: 0, section: 0)
+            tableView.selectRow(at: selectedCellIndexPath, animated: true, scrollPosition: .bottom)
+        }
     }
     
     @IBAction func reloadData() {
@@ -61,15 +77,15 @@ class CarsVC: UIViewController {
 
 extension CarsVC: UITableViewDelegate, UITableViewDataSource {
     
-    //MARK: - Callback & Delegates
+    //MARK: - DataSource & Delegates
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return vm.carsItems?.count ?? 0
+        return isFiltering ? filteredCars.count : (vm.carsItems?.count ?? 0)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell:CarViewCell = tableView.dequeueReusableCell(withIdentifier: CarViewCell.identifier, for: indexPath) as! CarViewCell
-        let item = vm.carsItems?[indexPath.row]
-        cell.car = item
+        let itemCar = isFiltering ? filteredCars[indexPath.row] : vm.carsItems?[indexPath.row]
+        cell.car = itemCar
         return cell
     }
     
@@ -83,6 +99,7 @@ extension CarsVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: CarHeaderView.headerID)
+        (header as? CarHeaderView)?.delegate = self
         return header
     }
     
@@ -99,7 +116,7 @@ extension CarsVC: UITableViewDelegate, UITableViewDataSource {
         } else {
             selectedCellIndexPath = indexPath
         }
-
+        
         if selectedCellIndexPath != nil {
             // This ensures, that the cell is fully visible once expanded
             tableView.scrollToRow(at: indexPath, at: .none, animated: true)
@@ -122,6 +139,35 @@ extension CarsVC: UITableViewDelegate, UITableViewDataSource {
          */
         if let cell = self.tableView.cellForRow(at: indexPath) as? CarViewCell {
             cell.hideDetailView()
+        }
+    }
+}
+
+extension CarsVC: CarHeaderDelegate {
+    
+    //MARK: - Callback & Delegates for UITextField
+    func didSearchFor(make: String) {
+        if let data = vm.carsItems, make.count > 0 {
+            isFiltering = true
+            filteredCars = data.filter({(dataString: Car) -> Bool in
+                return (dataString.make.range(of: make, options: .caseInsensitive) != nil)
+            })
+            
+        } else {
+            isFiltering = false
+            filteredCars = vm.carsItems!
+        }
+    }
+    
+    func didSearchFor(model: String) {
+        if let data = vm.carsItems, model.count > 0 {
+            isFiltering = true
+            filteredCars = data.filter({(dataString: Car) -> Bool in
+                return (dataString.model.range(of: model, options: .caseInsensitive) != nil)
+            })
+        } else {
+            isFiltering = false
+            filteredCars = vm.carsItems!
         }
     }
 }

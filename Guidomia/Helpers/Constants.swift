@@ -8,9 +8,11 @@
 import UIKit
 
 struct Constants {
+    static let appName: String = "Guidomia"
     static let carList: String = "CarList"
     static let star: String = "★"
     static let space: String = " "
+    static let bulletIcon: String = "•  "
     static let priceLabel = "Price : "
     static let thousand: String = "k"
     static let viewRadius: CGFloat = 6.0

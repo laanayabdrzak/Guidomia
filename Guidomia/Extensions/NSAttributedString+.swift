@@ -23,7 +23,7 @@ extension NSAttributedString {
         var attributes = [NSAttributedString.Key: AnyObject]()
         attributes[.foregroundColor] = UIColor.orange
         attributes[.font] = UIFont.systemFont(ofSize: 24, weight: .heavy)
-        let attributedString = NSAttributedString(string: "•  ", attributes: attributes)
+        let attributedString = NSAttributedString(string: Constants.bulletIcon, attributes: attributes)
         return attributedString
     }
     
@@ -40,6 +40,6 @@ extension NSAttributedString {
         
         let combination = NSMutableAttributedString()
         combination.append(eas)
-        return combination.withLineSpacing(10.0)
+        return combination.withLineSpacing(5.0)
     }
 }
