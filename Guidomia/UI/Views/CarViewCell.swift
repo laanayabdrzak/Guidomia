@@ -25,7 +25,7 @@ class CarViewCell: UITableViewCell {
     static let identifier = "CarViewCell"
     static let nibName = "CarViewCell"
     
-    public var car: Car? {
+    public var car: CarCodeable? {
         didSet { self.fillData() }
     }
     

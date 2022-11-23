@@ -26,13 +26,8 @@ class UIHelper {
         /** Remove "Back" from Navigation Bar*/
         navItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
-
-        
-        /**
-         Just to make it close as possible to the mock-up
-         **/
+        /** Just to make it close as possible to the mock-up  **/
         navItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .organize, target: nil, action: nil)
-        
     }
     
     func setCustomNavigationTitle(title: String, navItem: UINavigationItem) {

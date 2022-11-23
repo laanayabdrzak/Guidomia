@@ -1,6 +1,10 @@
 import UIKit
 
-struct Car: Codable {
+/****
+     Codable will allow you to covert from JSON to a Struct
+     with JSONDecoder().decode(_:from:).
+ */
+struct CarCodeable: Codable {
     
     var consList: [String]
     var customerPrice: Double
@@ -33,7 +37,7 @@ struct Car: Codable {
     
 }
 
-extension Car {
+extension CarCodeable {
     func carModelAndMake() -> String {
         return make + Constants.space + model
     }

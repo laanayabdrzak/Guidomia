@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 class CarsVC: UIViewController {
     
@@ -21,17 +22,37 @@ class CarsVC: UIViewController {
     
     private var selectedCellIndexPath: IndexPath?
     var isFiltering: Bool = false
-    var filteredCars = [Car]() {
+    var filteredCars = [CarCodeable]() {
         didSet {
             selectedCellIndexPath = nil
             tableView.reloadData()
         }
     }
     
+    lazy var fetchedhResultController: NSFetchedResultsController<NSFetchRequestResult> = {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: String(describing: Car.self))
+        // TODO: If we wanna sort with rating
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "rating", ascending: true)]
+        let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: DatabaseHelper.sharedInstance.persistentContainer.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        frc.delegate = self
+        return frc
+    }()
+    
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureView()
+        updateTableContent()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        /**
+         By default, the first item should be expanded.
+         */
+        if !isFiltering {
+            selectedCellIndexPath = IndexPath.init(row: 0, section: 0)
+            tableView.selectRow(at: selectedCellIndexPath, animated: true, scrollPosition: .bottom)
+        }
     }
     
     //MARK: - Setup UI
@@ -41,7 +62,7 @@ class CarsVC: UIViewController {
         UIHelper().setCustomNavigationTitle(title: Constants.appName.uppercased(), navItem: navigationItem)
         UIHelper().setNavigationBar(tintColor: .white, navController: navigationController, navItem: self.navigationItem)
         
-        // TableView attributs
+        // UITableView
         tableView.separatorStyle = .none
         tableView.automaticallyAdjustsScrollIndicatorInsets = false
         tableView.backgroundColor = .clear
@@ -58,15 +79,21 @@ class CarsVC: UIViewController {
         let nibCell = UINib(nibName: CarViewCell.nibName, bundle: nil)
         tableView.register(nibCell, forCellReuseIdentifier: CarViewCell.identifier)
         
-        // Refresh Control UI's
+        // Refresh Control
         refreshControl.addTarget(self, action: #selector(reloadData), for: .valueChanged)
         tableView.refreshControl = refreshControl
         
-        // By default, the first item should be expanded.
-        if !isFiltering {
-            selectedCellIndexPath = IndexPath.init(row: 0, section: 0)
-            tableView.selectRow(at: selectedCellIndexPath, animated: true, scrollPosition: .bottom)
+    }
+    
+    private func updateTableContent() {
+        
+        do {
+            try self.fetchedhResultController.performFetch()
+            print("COUNT FETCHED FIRST: \(String(describing: self.fetchedhResultController.sections?[0].numberOfObjects))")
+        } catch let error  {
+            print("ERROR: \(error)")
         }
+        vm.saveInCoreDataWith(array: vm.carsItems!)
     }
     
     @IBAction func reloadData() {
@@ -75,9 +102,9 @@ class CarsVC: UIViewController {
     }
 }
 
+//MARK: - DataSource & Delegates
 extension CarsVC: UITableViewDelegate, UITableViewDataSource {
     
-    //MARK: - DataSource & Delegates
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return isFiltering ? filteredCars.count : (vm.carsItems?.count ?? 0)
     }
@@ -121,11 +148,11 @@ extension CarsVC: UITableViewDelegate, UITableViewDataSource {
             // This ensures, that the cell is fully visible once expanded
             tableView.scrollToRow(at: indexPath, at: .none, animated: true)
         }
-        /*
+        /**
          we call this method with an animation block
          for much smoother effect when a cell is selected,
          The same can be achieved using `beginUpdates()` and `endUpdates()`
-         but apple suggests that we should use `performBatchUpdates` instead of them,
+         but apple suggests that we should use `performBatchUpdates` instead of them
          */
         UIView.animate(withDuration: 0.3) {
             self.tableView.performBatchUpdates(nil)
@@ -133,7 +160,7 @@ extension CarsVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        /*
+        /**
          hide the detailView when another cell is selected,
          we can achieve that easily with
          */
@@ -143,13 +170,13 @@ extension CarsVC: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
+//MARK: - Callback & Delegates for UITextField
 extension CarsVC: CarHeaderDelegate {
     
-    //MARK: - Callback & Delegates for UITextField
     func didSearchFor(make: String) {
         if let data = vm.carsItems, make.count > 0 {
             isFiltering = true
-            filteredCars = data.filter({(dataString: Car) -> Bool in
+            filteredCars = data.filter({(dataString: CarCodeable) -> Bool in
                 return (dataString.make.range(of: make, options: .caseInsensitive) != nil)
             })
             
@@ -162,12 +189,34 @@ extension CarsVC: CarHeaderDelegate {
     func didSearchFor(model: String) {
         if let data = vm.carsItems, model.count > 0 {
             isFiltering = true
-            filteredCars = data.filter({(dataString: Car) -> Bool in
+            filteredCars = data.filter({(dataString: CarCodeable) -> Bool in
                 return (dataString.model.range(of: model, options: .caseInsensitive) != nil)
             })
         } else {
             isFiltering = false
             filteredCars = vm.carsItems!
         }
+    }
+}
+
+extension CarsVC: NSFetchedResultsControllerDelegate {
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        
+        switch type {
+        case .insert:
+            self.tableView.insertRows(at: [newIndexPath!], with: .automatic)
+        case .delete:
+            self.tableView.deleteRows(at: [indexPath!], with: .automatic)
+        default:
+            break
+        }
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        self.tableView.endUpdates()
+    }
+    
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        self.tableView.beginUpdates()
     }
 }
