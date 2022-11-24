@@ -42,6 +42,8 @@ class CarsVC: UIViewController {
         if let array = vm.carsItems, !array.isEmpty, !isFiltering {
             selectedCellIndexPath = IndexPath.init(row: 0, section: 0)
             tableView.selectRow(at: selectedCellIndexPath, animated: true, scrollPosition: .bottom)
+        } else {
+            showAlertWith(title: "Error", message: "No data found")
         }
     }
     
@@ -78,6 +80,15 @@ class CarsVC: UIViewController {
     @IBAction func reloadData() {
         tableView.reloadData()
         refreshControl.endRefreshing()
+    }
+    
+    func showAlertWith(title: String, message: String, style: UIAlertController.Style = .alert) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: style)
+        let action = UIAlertAction(title: title, style: .default) { (action) in
+            self.dismiss(animated: true, completion: nil)
+        }
+        alertController.addAction(action)
+        self.present(alertController, animated: true, completion: nil)
     }
 }
 

@@ -41,5 +41,10 @@ You can run this in your terminal -
     cd Guidomia
     open Guidomia/Guidomia.xcworkspace
 
-You will have a running version of the Guidomia app by hitting Build > Run on Xcode 12.4 or later.
+## Developed By
+ Author: **Abderrazak LAANAYA**
 
+<a href="https://www.linkedin.com/in/laanayabdrzak">
+  <img alt="Follow me on LinkedIn"
+       src="https://raw.githubusercontent.com/florent37/DaVinci/master/mobile/src/main/res/drawable-hdpi/linkedin.png" />
+</a>
